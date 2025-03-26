@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-_r*kkcnl-xec@%$uv+)6++=u#4ua4+#!$u_0vo0tnh*mn8jw!0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['machine-learning-i5e5.onrender.com', 'localhost','127.0.0.1']
 
 
 # Application definition
