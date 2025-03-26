@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Performance Prediction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2d3436;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #636e72;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+            font-weight: 400;
+        }
+
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2d3436;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #dfe6e9;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #0984e3;
+            box-shadow: 0 0 0 3px rgba(9, 132, 227, 0.1);
+        }
+
+        .btn {
+            background: #0984e3;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: block;
+        }
+
+        .btn:hover {
+            background: #0773c5;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #636e72;
+            margin-top: 20px;
+        }
+
+        .btn-secondary:hover {
+            background: #4d5656;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0984e3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        .error-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: #fff5f5;
+            border: 1px solid #ffcdd2;
+            display: none;
+        }
+
+        .error-message {
+            color: #d32f2f;
+            font-size: 1em;
+            line-height: 1.5;
+        }
+
+        .results-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            display: none;
+        }
+
+        .result-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .label {
+            font-weight: 500;
+            color: #2d3436;
+        }
+
+        .value {
+            color: #0984e3;
+            font-weight: 600;
+        }
+
+        .insights-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .insights-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .insights-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+            color: #495057;
+        }
+
+        .insights-list li:last-child {
+            border-bottom: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .subtitle {
+                font-size: 1.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Student Performance Prediction</h1>
+        <p class="subtitle">Predict student success based on various factors</p>
+        
+        <div class="form-container">
+            <form id="predictionForm" method="POST">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="id_attendance">Attendance Percentage</label>
+                    {{ form.attendance }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_previous_grades">Previous Grades (Percentage)</label>
+                    {{ form.previous_grades }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_study_hours">Study Hours per Week</label>
+                    {{ form.study_hours }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_family_background">Family Background</label>
+                    {{ form.family_background }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_extracurricular_activities">Extracurricular Activities</label>
+                    {{ form.extracurricular_activities }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_parent_education">Parent Education Level</label>
+                    {{ form.parent_education }}
+                </div>
+                
+                <button type="submit" class="btn">Predict Performance</button>
+            </form>
+            
+            <div id="loadingSpinner" class="loading">
+                <div class="loading-spinner"></div>
+            </div>
+            
+            <div id="errorMessage" class="error-container">
+                <p class="error-message"></p>
+            </div>
+            
+            <div id="results" class="results-container" style="display: none;">
+                <h3>Prediction Results</h3>
+                <div class="result-item">
+                    <span class="result-label">Predicted Performance:</span>
+                    <span id="predictionResult" class="result-value"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Success Probability:</span>
+                    <span id="probabilityResult" class="result-value"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Key Insights:</span>
+                    <ul id="insightsList" class="insights-list"></ul>
+                </div>
+                <button class="btn btn-secondary mt-3" onclick="window.location.href='{% url 'index' %}'">
+                    Back to Home
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading spinner
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('results').style.display = 'none';
+            
+            // Get form data
+            const formData = new FormData(this);
+            
+            // Send prediction request
+            fetch('{% url "logistic_prediction" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading spinner
+                document.getElementById('loadingSpinner').style.display = 'none';
+                
+                if (data.success) {
+                    // Update results
+                    document.getElementById('predictionResult').textContent = data.prediction;
+                    document.getElementById('probabilityResult').textContent = data.probability + '%';
+                    
+                    // Update insights
+                    const insightsList = document.getElementById('insightsList');
+                    insightsList.innerHTML = '';
+                    data.insights.forEach(insight => {
+                        const li = document.createElement('li');
+                        li.textContent = insight;
+                        insightsList.appendChild(li);
+                    });
+                    
+                    // Show results
+                    document.getElementById('results').style.display = 'block';
+                } else {
+                    // Show error message
+                    document.getElementById('errorMessage').textContent = data.error;
+                    document.getElementById('errorMessage').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                // Hide loading spinner
+                document.getElementById('loadingSpinner').style.display = 'none';
+                
+                // Show error message
+                document.getElementById('errorMessage').textContent = 'Error making prediction. Please try again.';
+                document.getElementById('errorMessage').style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html> 

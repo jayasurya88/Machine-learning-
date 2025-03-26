@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Price Prediction - KNN</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            height: 100%;
+        }
+        .card-header {
+            border-radius: 12px 12px 0 0 !important;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background-color: #3f51b5;
+            border-color: #3f51b5;
+        }
+        .result-card {
+            transition: transform 0.3s;
+        }
+        .result-card:hover {
+            transform: translateY(-5px);
+        }
+        .neighbor-card {
+            border-left: 4px solid #3f51b5;
+        }
+        .feature-importance {
+            height: 20px;
+            background-color: #3f51b5;
+            border-radius: 4px;
+        }
+        #mapContainer {
+            height: 200px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .section-heading {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 8px;
+        }
+        .form-label {
+            font-weight: 500;
+        }
+        .display-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        @media (max-width: 767px) {
+            .display-price {
+                font-size: 2rem;
+            }
+            h1 {
+                font-size: 1.75rem;
+            }
+            h4, h5 {
+                font-size: 1.1rem;
+            }
+            .card-header h4 {
+                font-size: 1.1rem;
+            }
+            .mb-4 {
+                margin-bottom: 0.75rem !important;
+            }
+            .my-4 {
+                margin-top: 1rem !important;
+                margin-bottom: 1rem !important;
+            }
+            .card-body {
+                padding: 1rem;
+            }
+            .chart-container {
+                height: 200px !important;
+            }
+            #mapContainer {
+                height: 150px;
+            }
+        }
+        @media (max-width: 576px) {
+            .container {
+                padding: 10px;
+            }
+            .card {
+                margin-bottom: 15px;
+            }
+            .section-heading {
+                font-size: 1.1rem;
+            }
+            .display-price {
+                font-size: 1.75rem;
+            }
+            .form-control, .btn {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="text-center my-3 my-md-4">House Price Prediction <i class="fas fa-home text-primary"></i></h1>
+    <p class="text-center text-muted mb-3 mb-md-4">Using K-Nearest Neighbors algorithm to estimate property values</p>
+    
+    <div class="row g-3">
+        <!-- Form Section -->
+        <div class="col-md-12 col-lg-4 order-2 order-lg-1">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-house-user me-2"></i> Property Details</h4>
+                </div>
+                <div class="card-body">
+                    <form id="knnForm" method="post" action="{% url 'knn_prediction' %}">
+                        {% csrf_token %}
+                        
+                        <h5 class="section-heading"><i class="fas fa-ruler-combined me-2"></i> Size & Features</h5>
+                        <div class="mb-3">
+                            <label for="{{ form.square_footage.id_for_label }}" class="form-label">{{ form.square_footage.label }}</label>
+                            {{ form.square_footage }}
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label for="{{ form.bedrooms.id_for_label }}" class="form-label">{{ form.bedrooms.label }}</label>
+                                {{ form.bedrooms }}
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label for="{{ form.bathrooms.id_for_label }}" class="form-label">{{ form.bathrooms.label }}</label>
+                                {{ form.bathrooms }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.year_built.id_for_label }}" class="form-label">{{ form.year_built.label }}</label>
+                            {{ form.year_built }}
+                        </div>
+                        
+                        <h5 class="section-heading"><i class="fas fa-map-marker-alt me-2"></i> Location</h5>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label for="{{ form.zip_code.id_for_label }}" class="form-label">{{ form.zip_code.label }}</label>
+                                {{ form.zip_code }}
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label for="{{ form.neighborhood_score.id_for_label }}" class="form-label">{{ form.neighborhood_score.label }}</label>
+                                {{ form.neighborhood_score }}
+                            </div>
+                        </div>
+                        
+                        <h5 class="section-heading"><i class="fas fa-cogs me-2"></i> Model Settings</h5>
+                        <div class="mb-3">
+                            <label for="{{ form.k_neighbors.id_for_label }}" class="form-label">{{ form.k_neighbors.label }}</label>
+                            {{ form.k_neighbors }}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mt-3 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-search me-2"></i> Predict House Price
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <a href="{% url 'index' %}" class="btn btn-secondary w-100 mb-3 mb-lg-0">
+                <i class="fas fa-home me-2"></i> Back to Home
+            </a>
+        </div>
+
+        <!-- Results Section -->
+        <div class="col-md-12 col-lg-8 order-1 order-lg-2">
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="text-center my-5" style="display: none;">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-3">Analyzing property data...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
+
+            <!-- Results Container -->
+            <div id="resultsContainer" class="mt-3 mt-lg-0" style="display: none;">
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0"><i class="fas fa-chart-bar me-2"></i> Price Prediction Results</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 text-center mb-3 mb-md-0">
+                                <h5 class="text-muted">Predicted Price</h5>
+                                <h2 class="display-price" id="predictedPrice">₹0</h2>
+                                <p class="text-muted mb-0">Confidence Interval: <span id="confidenceInterval">±0%</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="mb-2">Price Per Square Foot</h5>
+                                <h3 class="fs-4" id="pricePerSqFt">₹0</h3>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar" role="progressbar" id="priceRangeBar" style="width: 50%"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <small>Low</small>
+                                    <small>Average</small>
+                                    <small>High</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i> Feature Importance</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container" style="height: 230px;">
+                                    <canvas id="featureChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-map me-2"></i> Location Analysis</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="mapContainer" class="mb-3">
+                                    <p class="text-center m-0"><i class="fas fa-map-marked-alt fa-2x mb-2"></i><br>Interactive map would display here</p>
+                                </div>
+                                <p class="mb-0">Average price in <span id="neighborhoodName">this area</span>: <strong id="areaAvgPrice">₹0</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-users me-2"></i> Nearest Neighbor Properties</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>These similar properties were used to determine the prediction:</p>
+                        <div id="neighborsContainer" class="row g-3">
+                            <!-- Neighbors will be added here dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#knnForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading spinner
+            $('#loadingSpinner').show();
+            $('#errorMessage').hide();
+            $('#resultsContainer').hide();
+            
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
+                dataType: 'json',
+                success: function(response) {
+                    // Hide loading spinner
+                    $('#loadingSpinner').hide();
+                    
+                    if (!response.success) {
+                        // Show error message
+                        $('#errorMessage').text(response.error || "An error occurred during prediction.").show();
+                        return;
+                    }
+                    
+                    // Update prediction results
+                    $('#predictedPrice').text('₹' + (response.predicted_price * 83).toLocaleString());
+                    $('#confidenceInterval').text('±' + response.confidence + '%');
+                    $('#pricePerSqFt').text('₹' + Math.round(response.price_per_sqft * 83) + '/sq.ft');
+                    $('#priceRangeBar').css('width', response.price_percentile + '%');
+                    $('#areaAvgPrice').text('₹' + Math.round(response.area_avg_price * 83).toLocaleString());
+                    $('#neighborhoodName').text(response.neighborhood);
+                    
+                    // Create feature importance chart
+                    createFeatureChart(response.feature_importance);
+                    
+                    // Add neighbor properties
+                    addNeighborProperties(response.neighbors);
+                    
+                    // Show results
+                    $('#resultsContainer').fadeIn();
+                    
+                    // Smooth scroll to results for mobile
+                    if (window.innerWidth < 992) {
+                        $('html, body').animate({
+                            scrollTop: $('#resultsContainer').offset().top - 20
+                        }, 500);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // Hide loading spinner
+                    $('#loadingSpinner').hide();
+                    
+                    // Show error message
+                    let errorMsg = 'An error occurred while processing your request.';
+                    try {
+                        const responseObj = JSON.parse(xhr.responseText);
+                        if (responseObj.error) {
+                            errorMsg = responseObj.error;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                    }
+                    
+                    $('#errorMessage').text(errorMsg).show();
+                }
+            });
+        });
+        
+        function createFeatureChart(featureData) {
+            const ctx = document.getElementById('featureChart').getContext('2d');
+            
+            // Proper Chart.js cleanup
+            if (window.featureChart instanceof Chart) {
+                window.featureChart.destroy();
+            } else if (window.featureChart) {
+                // If it exists but isn't a Chart instance, clean up the reference
+                window.featureChart = null;
+            }
+            
+            // Create new chart with proper Chart.js initialization
+            window.featureChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(featureData),
+                    datasets: [{
+                        data: Object.values(featureData),
+                        backgroundColor: [
+                            '#3f51b5', '#f44336', '#4caf50', '#ff9800', 
+                            '#2196f3', '#9c27b0', '#607d8b', '#e91e63'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: window.innerWidth < 768 ? 'bottom' : 'right',
+                            labels: {
+                                boxWidth: window.innerWidth < 768 ? 10 : 15,
+                                font: {
+                                    size: window.innerWidth < 768 ? 10 : 12
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function addNeighborProperties(neighbors) {
+            const container = $('#neighborsContainer');
+            container.empty();
+            
+            // Determine column size based on number of neighbors
+            const colSize = neighbors.length <= 2 ? 6 : (neighbors.length <= 4 ? 6 : 4);
+            
+            neighbors.forEach(function(neighbor) {
+                const card = `
+                    <div class="col-12 col-sm-${colSize} mb-2">
+                        <div class="card neighbor-card h-100">
+                            <div class="card-body">
+                                <h5 class="mb-2">₹${Math.round(neighbor.price * 83).toLocaleString()}</h5>
+                                <div class="d-flex flex-wrap">
+                                    <p class="mb-1 me-3"><i class="fas fa-ruler-combined me-1"></i> ${neighbor.square_footage} sq.ft</p>
+                                    <p class="mb-1 me-3"><i class="fas fa-bed me-1"></i> ${neighbor.bedrooms}</p>
+                                    <p class="mb-1"><i class="fas fa-bath me-1"></i> ${neighbor.bathrooms}</p>
+                                </div>
+                                <p class="mb-1"><i class="fas fa-calendar me-1"></i> Built ${neighbor.year_built}</p>
+                                <p class="mb-0"><i class="fas fa-map-marker-alt me-1"></i> ${neighbor.zip_code}</p>
+                                <div class="mt-2">
+                                    <span class="badge bg-primary">Distance: ${neighbor.distance.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.append(card);
+            });
+        }
+        
+        // Handle responsive chart legend position on window resize
+        $(window).resize(function() {
+            if (window.featureChart instanceof Chart) {
+                window.featureChart.options.plugins.legend.position = window.innerWidth < 768 ? 'bottom' : 'right';
+                window.featureChart.options.plugins.legend.labels.boxWidth = window.innerWidth < 768 ? 10 : 15;
+                window.featureChart.options.plugins.legend.labels.font.size = window.innerWidth < 768 ? 10 : 12;
+                window.featureChart.update();
+            }
+        });
+    });
+</script>
+</body>
+</html> 

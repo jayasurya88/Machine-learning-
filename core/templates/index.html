@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Learning Models Selection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #2d3436;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #636e72;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+            font-weight: 400;
+        }
+
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 20px;
+        }
+
+        .model-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .model-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .model-icon {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 15px;
+            font-size: 24px;
+        }
+
+        .model-title {
+            color: #2d3436;
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .model-description {
+            color: #636e72;
+            font-size: 1em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .model-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .status-ready {
+            background: #e3fcef;
+            color: #00b894;
+        }
+
+        .status-coming {
+            background: #fff5f5;
+            color: #d63031;
+        }
+
+        /* Model-specific colors */
+        .slr-card .model-icon {
+            background: #e3fcef;
+            color: #00b894;
+        }
+
+        .mlr-card .model-icon {
+            background: #e3f2fd;
+            color: #0984e3;
+        }
+
+        .logistic-card .model-icon {
+            background: #f3e5f5;
+            color: #6c5ce7;
+        }
+
+        .polynomial-card .model-icon {
+            background: #fff3e0;
+            color: #e17055;
+        }
+
+        .knn-card .model-icon {
+            background: #e8f5e9;
+            color: #00b894;
+        }
+
+        @media (max-width: 768px) {
+            .models-grid {
+                grid-template-columns: 1fr;
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .subtitle {
+                font-size: 1.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Machine Learning Models</h1>
+        <p class="subtitle">Select a model to make predictions</p>
+
+        <div class="models-grid">
+            <!-- Simple Linear Regression -->
+            <a href="/slr" class="model-card slr-card">
+                <div class="model-icon">📈</div>
+                <h2 class="model-title">Simple Linear Regression</h2>
+                <p class="model-description">Predict fuel consumption based on distance driven using a single predictor variable.</p>
+                <span class="model-status status-ready">Ready to Use</span>
+            </a>
+
+            <!-- Multiple Linear Regression -->
+            <a href="/mlr" class="model-card mlr-card">
+                <div class="model-icon">📊</div>
+                <h2 class="model-title">Multiple Linear Regression</h2>
+                <p class="model-description">Advanced prediction model using multiple features to estimate fuel consumption.</p>
+                <span class="model-status status-ready">Ready to Use</span>
+            </a>
+
+            <!-- Logistic Regression -->
+            <a href="/logistic" class="model-card logistic-card">
+                <div class="model-icon">🔢</div>
+                <h2 class="model-title">Logistic Regression</h2>
+                <p class="model-description">Predict student performance outcomes based on various factors like attendance, study hours, and demographics.</p>
+                <span class="model-status status-ready">Ready to Use</span>
+            </a>
+
+            <!-- Polynomial Regression -->
+            <a href="/traffic" class="model-card polynomial-card">
+                <div class="model-icon">📐</div>
+                <h2 class="model-title">Traffic Flow Prediction</h2>
+                <p class="model-description">Predict traffic volume based on time, day, weather and road conditions using polynomial regression.</p>
+                <span class="model-status status-ready">Ready to Use</span>
+            </a>
+
+            <!-- K-Nearest Neighbors -->
+            <a href="/knn" class="model-card knn-card">
+                <div class="model-icon">🏠</div>
+                <h2 class="model-title">House Price Prediction</h2>
+                <p class="model-description">Predict property values based on features like size, location, and amenities using K-Nearest Neighbors algorithm.</p>
+                <span class="model-status status-ready">Ready to Use</span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

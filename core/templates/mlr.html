@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple Linear Regression - Fuel Consumption Prediction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2d3436;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #636e72;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+            font-weight: 400;
+        }
+
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2d3436;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #dfe6e9;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #0984e3;
+            box-shadow: 0 0 0 3px rgba(9, 132, 227, 0.1);
+        }
+
+        .btn {
+            background: #0984e3;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: block;
+        }
+
+        .btn:hover {
+            background: #0773c5;
+            transform: translateY(-2px);
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            display: none;
+        }
+
+        .result-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-title {
+            color: #2d3436;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .result-value {
+            color: #0984e3;
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .metrics-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .metric-title {
+            color: #636e72;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            color: #2d3436;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            color: #0984e3;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+
+        .error-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: #fff5f5;
+            border: 1px solid #ffcdd2;
+            display: none;
+        }
+
+        .error-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .error-message {
+            color: #d32f2f;
+            font-size: 1em;
+            line-height: 1.5;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0984e3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .subtitle {
+                font-size: 1.1em;
+            }
+        }
+
+        .insights-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .insights-container h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .insights-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .insights-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+            color: #495057;
+        }
+        
+        .insights-list li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Advanced Fuel Consumption Prediction</h1>
+        <p class="subtitle">Predict fuel consumption using multiple features</p>
+        
+        <div class="form-container">
+            <form id="predictionForm" method="POST">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="id_distance">Distance Driven (km)</label>
+                    {{ form.distance }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_speed">Average Speed (km/h)</label>
+                    {{ form.speed }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_vehicle_weight">Vehicle Weight (kg)</label>
+                    {{ form.vehicle_weight }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_temperature">Temperature (°C)</label>
+                    {{ form.temperature }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_traffic_density">Traffic Density</label>
+                    {{ form.traffic_density }}
+                </div>
+                
+                <button type="submit" class="btn">Predict Fuel Consumption</button>
+            </form>
+            
+            <div id="loadingSpinner" class="loading" style="display: none;">
+                <div class="loading-spinner"></div>
+            </div>
+            
+            <div id="errorMessage" class="error-container" style="display: none;">
+                <p class="error-message"></p>
+            </div>
+            
+            <div class="results-container" id="resultsContainer" style="display: none;">
+                <h3>Prediction Results</h3>
+                <div class="result-item">
+                    <span class="label">Predicted Fuel Consumption:</span>
+                    <span class="value" id="predictionValue"></span>
+                </div>
+                <div class="result-item">
+                    <span class="label">Model Accuracy:</span>
+                    <span class="value" id="accuracyValue"></span>
+                </div>
+                <div class="result-item">
+                    <span class="label">Confidence Interval:</span>
+                    <span class="value" id="confidenceValue"></span>
+                </div>
+                <div class="result-item">
+                    <span class="label">Most Important Feature:</span>
+                    <span class="value" id="featureValue"></span>
+                </div>
+                <div class="insights-container">
+                    <h4>Efficiency Insights</h4>
+                    <ul id="insightsList" class="insights-list"></ul>
+                </div>
+                <a href="{% url 'index' %}" class="btn btn-secondary">Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading spinner
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'none';
+            
+            // Get form data
+            const formData = new FormData(this);
+            
+            // Send prediction request
+            fetch('{% url "mlr_prediction" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading spinner
+                document.getElementById('loadingSpinner').style.display = 'none';
+                
+                if (data.success) {
+                    // Update results
+                    document.getElementById('predictionValue').textContent = data.prediction + ' liters';
+                    document.getElementById('accuracyValue').textContent = data.accuracy + '%';
+                    document.getElementById('confidenceValue').textContent = '±' + data.confidence_interval + ' liters';
+                    document.getElementById('featureValue').textContent = data.most_important_feature;
+                    
+                    // Update insights
+                    const insightsList = document.getElementById('insightsList');
+                    insightsList.innerHTML = '';
+                    data.insights.forEach(insight => {
+                        const li = document.createElement('li');
+                        li.textContent = insight;
+                        insightsList.appendChild(li);
+                    });
+                    
+                    // Show results container
+                    document.getElementById('resultsContainer').style.display = 'block';
+                } else {
+                    // Show error message
+                    document.getElementById('errorMessage').textContent = data.error;
+                    document.getElementById('errorMessage').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                // Hide loading spinner
+                document.getElementById('loadingSpinner').style.display = 'none';
+                
+                // Show error message
+                document.getElementById('errorMessage').textContent = 'An error occurred. Please try again.';
+                document.getElementById('errorMessage').style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html> 
